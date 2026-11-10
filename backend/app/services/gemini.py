@@ -86,6 +86,20 @@ def _generate_mock_response(prompt: str) -> str:
     q_text = q_match.group(1).strip() if q_match else prompt
     q_lower = q_text.lower()
 
+    # 0. Greetings
+    if q_lower in ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "hi there", "hello!"]:
+        return "Hello! I am PeopleSphere HR Assistant. How can I assist you with company policies, leave entitlements, or employee records today?"
+
+    # 0.1 Out-of-Domain Refusal (animals, general trivia, politics, geography, science, math, etc.)
+    if any(k in q_lower for k in [
+        "president", "dog", "bark", "legs", "prime minister", "capital of", 
+        "weather in", "how many legs", "can a dog", "who is the leader", "solve"
+    ]) and not any(k in q_lower for k in ["leave", "policy", "manager", "balance", "employee", "hr", "pto", "work", "office"]):
+        return (
+            "I am PeopleSphere HR Assistant, dedicated strictly to company HR policies, employee benefits, and workplace matters. "
+            "I cannot answer general knowledge or off-topic questions. Please let me know if you have any questions regarding company policies, your leave balances, or employee benefits!"
+        )
+
     # 1. Taking all leave at once / consecutive block leave
     if any(k in q_lower for k in [
         "take everything", "all at once", "take all", "all my leave", 
@@ -389,6 +403,7 @@ async def generate_agent_response(
                     "1. For questions with matching retrieved information, provide the accurate details.\n"
                     "2. For any question, topic, perk, or policy asked by the user that is not mentioned or covered in the retrieved documents or records, "
                     "explicitly state that it is not covered in current company policies or records, and advise contacting the HR department.\n"
+                    "3. For any non-HR, general knowledge, or out-of-domain question, politely decline to answer, noting that as an HR assistant you only cover company HR and workplace topics.\n"
                     "Never invent, assume, or fabricate policies not present in the retrieved information."
                 )
                 final_synth = await generate_response(prompt=synth_prompt, system_instruction=system_instruction)

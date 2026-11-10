@@ -138,7 +138,10 @@ To maintain conversational coherence over long conversations while strictly adhe
    - Text extracted from user uploads and chat inputs is sanitized to strip zero-width characters (`\u200b`–`\u200f`, `\ufeff`), bidirectional override exploits (`\u202a`–`\u202e`), and null bytes.
    - Native Gemini `systemInstruction` establishes strict trust boundaries: documents and user queries are treated as untrusted reference data, explicitly disallowing instructions inside documents to alter assistant behavior.
    - Chat input is capped at 2,000 characters to prevent buffer-exhaustion attacks.
-5. **Demo Authentication Disclaimer**:
+5. **Domain-Scope Boundary & Out-of-Domain Guardrails**:
+   - The assistant is strictly restricted to Human Resources, employment policies, personal leave entitlements, benefits, and workplace operations.
+   - General world trivia, science, politics, sports, coding tasks, or external factual queries (e.g. animal biology, world leaders) are rejected with a courteous boundary message, preventing off-topic misuse while welcoming natural greetings and polite etiquette.
+6. **Demo Authentication Disclaimer**:
    - *Note: The seeded password authentication is provided for interview demonstration and testing purposes. In production, connect this layer to enterprise SSO / OAuth2 (e.g. Okta, Azure AD).*
 
 ---

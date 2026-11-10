@@ -121,3 +121,4 @@ async def update_long_term_summary_task(employee_id: str):
 
     except Exception as e:
         logger.warning(f"Background summarization task encountered non-fatal error: {e}")
+
