@@ -3,6 +3,22 @@ import re
 import fitz  # PyMuPDF
 from fastapi import HTTPException
 
+def sanitize_extracted_text(text: str) -> str:
+    """
+    Sanitize text to defend against prompt injection vectors and invisible token cloaking:
+    - Strips non-printable ASCII control characters.
+    - Strips Unicode zero-width characters (used to smuggle hidden prompt text).
+    - Strips Unicode bidirectional overrides (used to disguise instruction tokens).
+    Preserves all standard punctuation, alphanumeric characters, and line breaks.
+    """
+    if not text:
+        return ""
+    # Strip null bytes and non-printable control characters (except newline, carriage return, and tab)
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    # Strip Unicode zero-width and directional override characters
+    text = re.sub(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]", "", text)
+    return text
+
 def is_section_header(line_text: str, avg_size: float, baseline_size: float) -> bool:
     """
     Determine if a line of text represents a major section header or structural divider.
@@ -108,7 +124,8 @@ def extract_text_and_chunks_from_pdf(
             if "lines" not in b:
                 continue
             for line in b["lines"]:
-                line_text = "".join([s.get("text", "") for s in line.get("spans", [])]).strip()
+                raw_line = "".join([s.get("text", "") for s in line.get("spans", [])]).strip()
+                line_text = sanitize_extracted_text(raw_line)
                 if not line_text:
                     continue
                 spans = [s for s in line.get("spans", []) if s.get("text", "").strip()]

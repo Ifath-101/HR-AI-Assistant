@@ -1,3 +1,4 @@
+import os
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -32,24 +33,25 @@ async def lifespan(app: FastAPI):
         print(f"❌ [STARTUP] [2/4] Vector DB Error: {e}", flush=True)
 
     # 3. Embedding Model (Gemini Embedding)
-    try:
-        from app.services.gemini import generate_single_embedding
-        sample_vector = await generate_single_embedding("startup_verification_text")
-        print(f"🔢 [STARTUP] [3/4] Embedding Model: Ready | Model: '{settings.GEMINI_EMBEDDING_MODEL}' (dim: {len(sample_vector)})", flush=True)
-    except Exception as e:
-        print(f"⚠️ [STARTUP] [3/4] Embedding Model Warning: {e}", flush=True)
+    if os.getenv("TESTING", "").lower() != "true":
+        try:
+            from app.services.gemini import generate_single_embedding
+            sample_vector = await generate_single_embedding("startup_verification_text")
+            print(f"🔢 [STARTUP] [3/4] Embedding Model: Ready | Model: '{settings.GEMINI_EMBEDDING_MODEL}' (dim: {len(sample_vector)})", flush=True)
+        except Exception as e:
+            print(f"⚠️ [STARTUP] [3/4] Embedding Model Warning: {e}", flush=True)
 
-    # 4. LLM Generation Model (Gemini 3.8 Flash)
-    try:
-        from app.services.gemini import generate_response
-        test_response = await generate_response(
-            prompt="Respond only with 'READY' to verify system initialization.",
-            system_instruction=None,
-            history=None
-        )
-        print(f"🤖 [STARTUP] [4/4] LLM (Gemini): Ready | Configured: '{settings.GEMINI_MODEL}' | Live Test: {test_response[:60].strip()}", flush=True)
-    except Exception as e:
-        print(f"⚠️ [STARTUP] [4/4] LLM Warning: {e}", flush=True)
+        # 4. LLM Generation Model (Gemini 3.8 Flash)
+        try:
+            from app.services.gemini import generate_response
+            test_response = await generate_response(
+                prompt="Respond only with 'READY' to verify system initialization.",
+                system_instruction=None,
+                history=None
+            )
+            print(f"🤖 [STARTUP] [4/4] LLM (Gemini): Ready | Configured: '{settings.GEMINI_MODEL}' | Live Test: {test_response[:60].strip()}", flush=True)
+        except Exception as e:
+            print(f"⚠️ [STARTUP] [4/4] LLM Warning: {e}", flush=True)
 
     print("=" * 68 + "\n", flush=True)
 

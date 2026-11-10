@@ -100,6 +100,17 @@ def init_db():
         """)
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_history_emp ON chat_history(employee_id, id ASC)")
 
+        # Long-Term Conversation Summary table for Hybrid Memory Strategy
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS conversation_summaries (
+                employee_id TEXT PRIMARY KEY,
+                summary TEXT NOT NULL DEFAULT '',
+                last_summarized_id INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
+            )
+        """)
+
         # Check if designation column exists in employees table (for schema migration)
         cursor.execute("PRAGMA table_info(employees)")
         existing_emp_cols = [row["name"] for row in cursor.fetchall()]
@@ -509,10 +520,54 @@ def get_employee_chat_history(employee_id: str, limit: int = 50) -> List[Dict[st
         return [dict(row) for row in cursor.fetchall()]
 
 def clear_employee_chat_history(employee_id: str) -> bool:
-    """Clear all chat history for an employee."""
+    """Clear all chat history and conversation summary for an employee."""
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM chat_history WHERE employee_id = ?", (employee_id,))
+        cursor.execute("DELETE FROM conversation_summaries WHERE employee_id = ?", (employee_id,))
         conn.commit()
         return cursor.rowcount > 0
+
+def get_conversation_summary(employee_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieve long-term running conversation summary for an employee."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT summary, last_summarized_id, updated_at
+            FROM conversation_summaries
+            WHERE employee_id = ?
+        """, (employee_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+def save_conversation_summary(employee_id: str, summary: str, last_summarized_id: int):
+    """Store or update the running conversation summary for an employee."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO conversation_summaries (employee_id, summary, last_summarized_id, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(employee_id) DO UPDATE SET
+                summary = excluded.summary,
+                last_summarized_id = excluded.last_summarized_id,
+                updated_at = CURRENT_TIMESTAMP
+        """, (employee_id, summary.strip(), last_summarized_id))
+        conn.commit()
+
+def get_unsummarized_chat_messages(employee_id: str, last_summarized_id: int, exclude_recent_n: int = 4) -> List[Dict[str, Any]]:
+    """
+    Retrieve older chat messages that have not yet been condensed into the long-term summary,
+    excluding the most recent N messages (which remain in the short-term buffer).
+    """
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, role, content FROM chat_history
+            WHERE employee_id = ? AND id > ?
+            ORDER BY id ASC
+        """, (employee_id, last_summarized_id))
+        rows = [dict(r) for r in cursor.fetchall()]
+        if len(rows) > exclude_recent_n:
+            return rows[:-exclude_recent_n]
+        return []
 
