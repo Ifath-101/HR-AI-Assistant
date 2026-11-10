@@ -1,0 +1,62 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+*/venv/
+backend/venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+*/.pytest_cache/
+
+# Databases, Vector Store & Local uploads
+*.sqlite3
+*.db
+data/
+chroma_data/
+uploads/*
+!uploads/.gitkeep
+backend/data/
+backend/chroma_data/
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Node / Frontend
+node_modules/
+*/node_modules/
+frontend/dist/
+frontend/build/
+.npm
+.eslintcache
+*.tsbuildinfo
+
+# OS, Editors & Temporary Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
