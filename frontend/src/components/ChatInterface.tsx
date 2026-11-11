@@ -507,7 +507,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <span className="animate-pulse-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
               <span className="animate-pulse-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animationDelay: '0.2s' }} />
               <span className="animate-pulse-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animationDelay: '0.4s' }} />
-              <span style={{ fontSize: '0.78rem', color: '#64748b', marginLeft: '0.25rem' }}>Synthesizing policy context...</span>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', marginLeft: '0.25rem' }}>Thinking...</span>
             </div>
           </div>
         )}
