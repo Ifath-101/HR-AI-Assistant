@@ -62,5 +62,21 @@ export interface EmployeeUpdatePayload {
   annual_leave_balance?: number;
   medical_leave_used?: number;
   reporting_manager?: string;
+  role?: 'admin' | 'employee';
+  admin_verification_password?: string;
+}
+
+export interface EmployeeCreatePayload {
+  employee_id?: string;
+  name: string;
+  email: string;
+  initial_password?: string;
+  role: 'admin' | 'employee';
+  department: string;
+  designation: string;
+  annual_leave_balance: number;
+  medical_leave_used: number;
+  reporting_manager?: string;
+  admin_verification_password?: string;
 }
 

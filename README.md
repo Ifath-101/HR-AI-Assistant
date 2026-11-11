@@ -14,6 +14,8 @@ Built with a strong focus on simplicity, maintainability, strict data isolation,
 - **Hybrid RAG Indexing**: Indexes dense vector embeddings into ChromaDB and prepares chunks for sparse keyword matching.
 - **Document Oversight**: View indexed documents, chunk counts, file sizes, and delete documents with instant removal from ChromaDB.
 - **Employee Record Management**: View all employee records and update designations, department, reporting managers, or leave balances stored in SQLite.
+- **Employee Provisioning & RBAC Management**: Add new employees directly into the employee directory with initial credentials, custom department assignments, and leave balances.
+- **Administrative Privilege Escalation (Step-Up Verification)**: Grant HR Administrator access or promote existing employees with industry-standard step-up password re-authentication (NIST SP 800-63B / OWASP ASVS), preventing unauthorized privilege escalation.
 
 ### 👨‍💻 Employee (`employee@gmail.com` - Jane Doe)
 - **Policy Question Answering**: Ask questions about vacation rules, carry-over limits, health benefits, or remote work guidelines.
@@ -138,10 +140,14 @@ To maintain conversational coherence over long conversations while strictly adhe
    - Text extracted from user uploads and chat inputs is sanitized to strip zero-width characters (`\u200b`–`\u200f`, `\ufeff`), bidirectional override exploits (`\u202a`–`\u202e`), and null bytes.
    - Native Gemini `systemInstruction` establishes strict trust boundaries: documents and user queries are treated as untrusted reference data, explicitly disallowing instructions inside documents to alter assistant behavior.
    - Chat input is capped at 2,000 characters to prevent buffer-exhaustion attacks.
-5. **Domain-Scope Boundary & Out-of-Domain Guardrails**:
+5. **Administrative Privilege Escalation & Step-Up Verification**:
+   - Provisioning a user with the elevated `admin` role or promoting an existing employee to administrator requires step-up authentication.
+   - The acting HR Manager must confirm their current password (`admin_verification_password`).
+   - Complies with NIST SP 800-63B and OWASP ASVS guidelines to prevent unauthorized privilege escalation through unattended sessions or session hijacking.
+6. **Domain-Scope Boundary & Out-of-Domain Guardrails**:
    - The assistant is strictly restricted to Human Resources, employment policies, personal leave entitlements, benefits, and workplace operations.
    - General world trivia, science, politics, sports, coding tasks, or external factual queries (e.g. animal biology, world leaders) are rejected with a courteous boundary message, preventing off-topic misuse while welcoming natural greetings and polite etiquette.
-6. **Demo Authentication Disclaimer**:
+7. **Demo Authentication Disclaimer**:
    - *Note: The seeded password authentication is provided for interview demonstration and testing purposes. In production, connect this layer to enterprise SSO / OAuth2 (e.g. Okta, Azure AD).*
 
 ---
@@ -236,6 +242,7 @@ A concise, comprehensive test suite validates core architecture requirements:
 2. **Employee Data Isolation** (`test_isolation.py`): Guarantees employees can only access their own record and verifies that ChromaDB vector collection holds zero employee data.
 3. **RAG & PDF Ingestion** (`test_rag.py`): Tests PyMuPDF text extraction, section-aware chunking, question classification, prompt formatting, and ChromaDB chunk additions/deletions.
 4. **Hybrid Memory & Persistence** (`test_memory.py`): Tests Tier A sliding window message assembly, Tier B summary persistence in SQLite, and context reconstruction.
+5. **Employee Provisioning & Step-Up Verification** (`test_employees.py`): Tests staff provisioning, email uniqueness, step-up authentication password verification when granting or escalating to admin privileges, and 403 enforcement.
 
 Run tests:
 ```bash

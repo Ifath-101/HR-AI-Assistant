@@ -1,4 +1,4 @@
-import { AuthResponse, DemoAccount, Document, EmployeeUpdatePayload, User } from '../types';
+import { AuthResponse, DemoAccount, Document, EmployeeUpdatePayload, EmployeeCreatePayload, User } from '../types';
 
 const API_BASE = '/api';
 
@@ -125,6 +125,26 @@ export const api = {
       headers: { ...getAuthHeader() },
     });
     return handleResponse<User>(res);
+  },
+
+  async createEmployee(payload: EmployeeCreatePayload): Promise<User> {
+    const res = await fetch(`${API_BASE}/employees`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<User>(res);
+  },
+
+  async getNextEmployeeId(role: 'admin' | 'employee' = 'employee'): Promise<string> {
+    const res = await fetch(`${API_BASE}/employees/next-id?role=${role}`, {
+      headers: { ...getAuthHeader() },
+    });
+    const data = await handleResponse<{ suggested_id: string }>(res);
+    return data.suggested_id;
   },
 
   async updateEmployee(employeeId: string, updates: EmployeeUpdatePayload): Promise<User> {

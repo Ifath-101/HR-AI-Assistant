@@ -1,3 +1,4 @@
+import re
 import sqlite3
 from typing import Optional, List, Dict, Any
 from pathlib import Path
@@ -331,7 +332,8 @@ def update_employee_record(
     designation: Optional[str] = None,
     annual_leave_balance: Optional[int] = None,
     medical_leave_used: Optional[int] = None,
-    reporting_manager: Optional[str] = None
+    reporting_manager: Optional[str] = None,
+    role: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """Update employee details (Admin only operation)."""
     with get_db_connection() as conn:
@@ -353,6 +355,9 @@ def update_employee_record(
         if reporting_manager is not None:
             fields.append("reporting_manager = ?")
             params.append(reporting_manager)
+        if role is not None:
+            fields.append("role = ?")
+            params.append(role.strip().lower())
 
         if not fields:
             return get_employee_by_id(employee_id)
@@ -362,6 +367,68 @@ def update_employee_record(
         cursor.execute(query, tuple(params))
         conn.commit()
         return get_employee_by_id(employee_id)
+
+def get_next_suggested_employee_id(role: str = "employee") -> str:
+    """Generate the next sequential employee/admin ID (e.g. EMP010 or ADM002)."""
+    prefix = "ADM" if role.lower() == "admin" else "EMP"
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT employee_id FROM employees WHERE employee_id LIKE ?", (f"{prefix}%",))
+        rows = cursor.fetchall()
+
+    max_num = 0
+    for r in rows:
+        val = r["employee_id"]
+        m = re.search(r"\d+", val)
+        if m:
+            try:
+                num = int(m.group(0))
+                if num > max_num:
+                    max_num = num
+            except ValueError:
+                pass
+
+    return f"{prefix}{max_num + 1:03d}"
+
+def create_employee_record(
+    employee_id: str,
+    name: str,
+    email: str,
+    password_hash: str,
+    role: str = "employee",
+    department: str = "",
+    designation: str = "",
+    annual_leave_balance: int = 20,
+    medical_leave_used: int = 0,
+    reporting_manager: str = ""
+) -> Dict[str, Any]:
+    """Insert a new employee or administrator record into SQLite."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO employees (
+                employee_id, name, email, password_hash, role,
+                department, designation, annual_leave_balance,
+                medical_leave_used, reporting_manager
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            employee_id.strip(),
+            name.strip(),
+            email.strip().lower(),
+            password_hash,
+            role.strip().lower(),
+            department.strip(),
+            designation.strip(),
+            annual_leave_balance,
+            medical_leave_used,
+            reporting_manager.strip()
+        ))
+        conn.commit()
+
+    created = get_employee_by_id(employee_id.strip())
+    if not created:
+        raise ValueError(f"Failed to retrieve newly created employee {employee_id}")
+    return created
 
 def create_document_record(
     doc_id: str,
