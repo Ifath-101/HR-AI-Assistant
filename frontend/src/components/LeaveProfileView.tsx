@@ -267,7 +267,7 @@ export const LeaveProfileView: React.FC<LeaveProfileViewProps> = ({
                   Medical Leave
                 </h4>
                 <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                  Standard allowance: 14 days / year
+                  Standard allowance: 10 days / year
                 </span>
               </div>
             </div>
@@ -283,13 +283,16 @@ export const LeaveProfileView: React.FC<LeaveProfileViewProps> = ({
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.35rem' }}>
             <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#b91c1c', letterSpacing: '-0.02em', lineHeight: 1 }}>
-              {profile.medical_leave_used}
+              {Math.max(0, 10 - profile.medical_leave_used)}
             </span>
             <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>
-              days used ({14 - profile.medical_leave_used} available)
+              days remaining
             </span>
+          </div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1rem', fontWeight: 500 }}>
+            {profile.medical_leave_used} of 10 days used this calendar year
           </div>
 
           {/* Progress visual */}
@@ -302,7 +305,7 @@ export const LeaveProfileView: React.FC<LeaveProfileViewProps> = ({
           }}>
             <div style={{
               height: '100%',
-              width: `${Math.min(100, (profile.medical_leave_used / 14) * 100)}%`,
+              width: `${Math.min(100, (Math.max(0, 10 - profile.medical_leave_used) / 10) * 100)}%`,
               backgroundColor: '#dc2626',
               borderRadius: '9999px'
             }} />
@@ -317,7 +320,7 @@ export const LeaveProfileView: React.FC<LeaveProfileViewProps> = ({
             color: '#475569',
             lineHeight: 1.45
           }}>
-            <strong>Policy rule:</strong> An official Medical Certificate (MC) is required for sick leave exceeding two (2) consecutive working days.
+            <strong>Policy rule:</strong> An official Medical Certificate (MC) is mandatory for sick leave exceeding three (3) consecutive working days. Unplanned emergency absence must be notified by 8:30 AM.
           </div>
         </div>
       </div>

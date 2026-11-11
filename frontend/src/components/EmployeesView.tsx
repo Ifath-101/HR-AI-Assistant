@@ -400,9 +400,15 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({ onCountChange }) =
                     </span> days remaining
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <span style={{ fontWeight: 700, color: '#b91c1c' }}>
-                      {emp.medical_leave_used}
-                    </span> days used
+                    <div>
+                      <span style={{ fontWeight: 700, color: '#b91c1c' }}>
+                        {Math.max(0, 10 - emp.medical_leave_used)}
+                      </span>
+                      <span style={{ color: '#475569' }}> days left</span>
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                      ({emp.medical_leave_used} used of 10)
+                    </div>
                   </td>
                   <td style={{ padding: '0.75rem 1rem', color: '#334155' }}>
                     {emp.reporting_manager || <span style={{ color: '#94a3b8' }}>None</span>}
@@ -995,7 +1001,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({ onCountChange }) =
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 600, color: '#334155', marginBottom: '0.25rem' }}>
-                    Medical Leave Used
+                    Medical Leave Used (of 10 days)
                   </label>
                   <input
                     type="number"

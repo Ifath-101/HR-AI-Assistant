@@ -108,3 +108,4 @@ def test_update_employee_promote_to_admin_with_verification(client, admin_token)
     })
     assert res_succ.status_code == 200
     assert res_succ.json()["role"] == "admin"
+

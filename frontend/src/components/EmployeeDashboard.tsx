@@ -144,14 +144,19 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user: init
                 <HeartPulse size={17} color="#dc2626" />
                 <div>
                   <div style={{ fontSize: '0.74rem', fontWeight: 600, color: '#991b1b' }}>Medical Leave</div>
-                  <div style={{ fontSize: '0.68rem', color: '#ef4444' }}>Limit: 14 days/yr</div>
+                  <div style={{ fontSize: '0.68rem', color: '#ef4444' }}>Entitlement: 10 days/yr</div>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b91c1c' }}>
-                  {userProfile.medical_leave_used}
-                </span>
-                <span style={{ fontSize: '0.72rem', color: '#991b1b', marginLeft: '3px' }}>used</span>
+                <div>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b91c1c' }}>
+                    {Math.max(0, 10 - userProfile.medical_leave_used)}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#991b1b', marginLeft: '3px' }}>left</span>
+                </div>
+                <div style={{ fontSize: '0.66rem', color: '#64748b', marginTop: '1px' }}>
+                  ({userProfile.medical_leave_used} used of 10)
+                </div>
               </div>
             </div>
 
